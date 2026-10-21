@@ -1,6 +1,6 @@
 # ADR 0003 : connexion et session SSO
 
-- Statut : Accepte
+- Statut : Partiellement remplace par [ADR 0006](0006-inscription-email.md)
 - Date : 2026-10-20
 
 ## Contexte
@@ -23,4 +23,4 @@ Ne pas ajouter de stockage manuel des mots de passe ou tokens. Effacer le champ 
 
 Les tokens persistants sont accessibles au JavaScript de cette origine. Le risque XSS ne peut pas etre elimine par des cookies HttpOnly sur cet hebergement. Ne pas utiliser `v-html`, scripts tiers ou telemetrie. Servir sur une origine dediee, sans autres applications partageant son localStorage. La session ne se partage pas directement entre les domaines des applications : chacune redirige vers l'origine du fournisseur via Supabase.
 
-La deconnexion locale du fournisseur n'est pas une deconnexion globale des applications et ne revoque pas immediatement tous les JWT existants. Les comptes sont provisionnes hors frontend ; inscription, recuperation de mot de passe et MFA ne sont pas implementes. Un projet imposant un second facteur demande une evolution avant utilisation.
+La deconnexion locale du fournisseur n'est pas une deconnexion globale des applications et ne revoque pas immediatement tous les JWT existants. Les choix concernant l'inscription publique sont precises par l'ADR 0006. Recuperation de mot de passe et MFA ne sont pas implementes. Un projet imposant un second facteur demande une evolution avant utilisation.

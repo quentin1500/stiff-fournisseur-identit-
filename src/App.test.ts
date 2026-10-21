@@ -13,6 +13,7 @@ beforeEach(() => {
   gateway = {
     currentUser: vi.fn().mockResolvedValue(false),
     signIn: vi.fn().mockResolvedValue(undefined),
+    signUp: vi.fn().mockResolvedValue(false),
     details: vi.fn().mockResolvedValue({
       authorization_id: 'request-123',
       redirect_uri: 'https://app.test/callback',
@@ -60,6 +61,36 @@ describe('interface', () => {
     expect(wrapper.get('#password').attributes('type')).toBe('password')
     expect(wrapper.get('[role="alert"]').text()).toContain('Connexion impossible')
     expect(wrapper.text()).not.toContain('internal backend error')
+  })
+
+  it('propose la creation de compte et affiche une confirmation generique', async () => {
+    wrapper = mount(App)
+    await flushPromises()
+    await wrapper.get('button.auth-switch').trigger('click')
+    expect(wrapper.text()).toContain('Creez votre compte')
+    expect(wrapper.get('#password').attributes('autocomplete')).toBe('new-password')
+    await wrapper.get('#email').setValue('user@example.com')
+    await wrapper.get('#password').setValue('secret-test')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(gateway.signUp).toHaveBeenCalledWith('user@example.com', 'secret-test')
+    expect((wrapper.get('#password').element as HTMLInputElement).value).toBe('')
+    expect(wrapper.get('[role="status"]').text()).toContain('email de confirmation')
+    expect(wrapper.text()).not.toContain('internal backend error')
+    expect(gateway.decide).not.toHaveBeenCalled()
+  })
+
+  it('n expose pas les erreurs techniques de Supabase lors de l inscription', async () => {
+    vi.mocked(gateway.signUp).mockRejectedValue(new Error('email already registered'))
+    wrapper = mount(App)
+    await flushPromises()
+    await wrapper.get('button.auth-switch').trigger('click')
+    await wrapper.get('#email').setValue('user@example.com')
+    await wrapper.get('#password').setValue('secret-test')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('[role="alert"]').text()).toContain('Inscription impossible')
+    expect(wrapper.text()).not.toContain('email already registered')
   })
 
   it('refuse depuis le bouton prevu et affiche une erreur non technique', async () => {

@@ -13,6 +13,7 @@ function fixture() {
     getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'test' } as { access_token: string } | null }, error: null }),
     getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user' } }, error: null }),
     signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    signUp: vi.fn().mockResolvedValue({ data: { session: { access_token: 'test' } as { access_token: string } | null }, error: null }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
     onAuthStateChange: vi.fn(),
     oauth: {
@@ -42,6 +43,13 @@ describe('contrat Supabase', () => {
     const { auth, gateway } = fixture()
     await gateway.signOut()
     expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+  })
+  it('utilise signUp et indique si Supabase a ouvert une session', async () => {
+    const { auth, gateway } = fixture()
+    expect(await gateway.signUp('user@example.com', 'password')).toBe(true)
+    expect(auth.signUp).toHaveBeenCalledWith({ email: 'user@example.com', password: 'password' })
+    auth.signUp.mockResolvedValue({ data: { session: null }, error: null })
+    expect(await gateway.signUp('new@example.com', 'password')).toBe(false)
   })
   it('verifie l utilisateur de la session existante sur le serveur', async () => {
     const { auth, gateway } = fixture()

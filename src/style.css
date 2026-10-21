@@ -108,6 +108,8 @@ input {
 .secondary { background: #f9fdff; color: var(--ink); box-shadow: 3px 3px 0 #aabcc4; }
 .secondary:hover:not(:disabled) { background: #deedf2; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #aabcc4; }
 .login-form .primary { margin-top: 10px; justify-content: space-between; }
+.auth-switch { width: 100%; }
+.notice { background: #e1eff4; border: 1px solid #176b8a; border-left: 4px solid #176b8a; padding: 12px 14px; font-size: 13px; line-height: 1.7; color: var(--ink); margin: 4px 0 12px; border-radius: 3px 9px 3px 9px; }
 .application-mark {
   width: 54px;
   height: 54px;

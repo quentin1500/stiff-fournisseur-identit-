@@ -6,6 +6,7 @@ export type Authorization = ConsentDetails | { redirect_url: string }
 export interface IdentityGateway {
   currentUser(): Promise<boolean>
   signIn(email: string, password: string): Promise<void>
+  signUp(email: string, password: string): Promise<boolean>
   details(id: string): Promise<Authorization>
   decide(id: string, approved: boolean): Promise<string>
   signOut(): Promise<void>
@@ -34,6 +35,11 @@ export function createIdentityGateway(): IdentityGateway {
     async signIn(email, password) {
       const { error } = await client.auth.signInWithPassword({ email, password })
       if (error) throw error
+    },
+    async signUp(email, password) {
+      const { data, error } = await client.auth.signUp({ email, password })
+      if (error) throw error
+      return Boolean(data.session)
     },
     async details(id) {
       const { data, error } = await client.auth.oauth.getAuthorizationDetails(id)

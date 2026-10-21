@@ -9,7 +9,7 @@ Stiff Identity presente en francais la connexion et le consentement des utilisat
 1. L'application consommatrice demarre une autorisation aupres de Supabase.
 2. Supabase redirige vers `/oauth/consent?authorization_id=...` sur le domaine du fournisseur.
 3. Le frontend refuse une demande sans identifiant unique non vide, sans appel Supabase ni redirection arbitraire.
-4. Sans session, l'utilisateur voit un formulaire email/mot de passe. Il ne cree pas de compte. Apres connexion, la meme demande est rechargee, sans autorisation automatique.
+4. Sans session, l'utilisateur peut se connecter ou creer un compte avec son email et un mot de passe. Apres authentification, la meme demande est rechargee, sans autorisation automatique. Si Supabase exige une confirmation email avant d'ouvrir une session, l'interface indique de verifier sa boite mail puis de revenir se connecter.
 5. Avec une session, le frontend verifie l'utilisateur et charge les details de la demande.
 6. L'ecran indique l'application, l'email du compte concerne, toutes les permissions demandees et le domaine de retour. Les scopes standards sont decrits ; les scopes inconnus restent visibles sous leur nom. Aucun choix partiel des permissions n'est propose.
 7. L'utilisateur autorise ou refuse. Les actions restent desactivees pendant le traitement pour bloquer les doubles decisions.
@@ -34,6 +34,7 @@ Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirect
 | F11 | Session perdue | SIGNED_OUT efface les details et invalide les resultats en vol avant retour a la connexion. |
 | F12 | Accessibilite | Navigation clavier, focus visible, erreurs role=alert, chargement role=status, boutons nommes, vues mobiles et mouvement reduit. |
 | F13 | Configuration absente | Aucun faux succes ni mode de demonstration en production ; afficher le service indisponible. |
+| F14 | Inscription | Depuis la mire, un utilisateur peut basculer vers un formulaire email/mot de passe avec autocompletion adaptee. Une session retournee par Supabase reprend la demande sans l'autoriser ; sans session, un message generique invite a verifier l'email et revenir se connecter, sans reveler si l'adresse existe. |
 
 ## Direction visuelle
 
@@ -43,7 +44,7 @@ L'URL racine ne cree pas de demande : elle affiche le meme traitement d'absence 
 
 ## Hors perimetre
 
-Inscription, invitation, mot de passe oublie, recuperation, MFA, fournisseurs sociaux, gestion des applications clientes, historique/revocation de consentement, gestion de profil, deconnexion globale SSO, API metier et regles RLS. Les comptes V1 doivent etre preexistants et utilisables sans second facteur impose. La connexion depend du reseau ; aucun mode hors ligne.
+Invitation, mot de passe oublie, recuperation, MFA, fournisseurs sociaux, gestion des applications clientes, historique/revocation de consentement, gestion de profil, deconnexion globale SSO, API metier et regles RLS. Le parcours depend du reseau ; aucun mode hors ligne.
 
 ## Verification
 

@@ -7,6 +7,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
   const details = shallowRef<ConsentDetails | null>(null)
   const busy = ref(false)
   const error = ref('')
+  const notice = ref('')
   let requestId = ''
   let revision = 0
 
@@ -15,6 +16,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     revision++
     details.value = null
     error.value = ''
+    notice.value = ''
     phase.value = 'login'
   }
 
@@ -40,6 +42,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     phase.value = 'loading'
     details.value = null
     error.value = ''
+    notice.value = ''
     const version = ++revision
     try {
       requestId = authorizationIdFrom(search)
@@ -60,6 +63,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     if (busy.value || phase.value !== 'login') return
     busy.value = true
     error.value = ''
+    notice.value = ''
     const version = ++revision
     try {
       await gateway.signIn(email.trim(), password)
@@ -77,10 +81,39 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     }
   }
 
+  async function signUp(email: string, password: string) {
+    if (busy.value || phase.value !== 'login') return
+    busy.value = true
+    error.value = ''
+    notice.value = ''
+    const version = ++revision
+    try {
+      const authenticated = await gateway.signUp(email.trim(), password)
+      if (version !== revision) return
+      if (!authenticated) {
+        notice.value = 'Si cette adresse peut etre inscrite, un email de confirmation sera envoye. Verifiez votre boite mail, puis revenez ici pour vous connecter.'
+        return
+      }
+      phase.value = 'loading'
+      await fetchDetails(version)
+    } catch {
+      if (version !== revision) return
+      if (phase.value === 'login') {
+        error.value = 'Inscription impossible. Verifiez les informations ou reessayez plus tard.'
+      } else {
+        error.value = 'La demande ne peut pas etre chargee. Relancez la connexion depuis votre application.'
+        phase.value = 'error'
+      }
+    } finally {
+      busy.value = false
+    }
+  }
+
   async function decide(approved: boolean) {
     if (busy.value || phase.value !== 'consent' || !details.value) return
     busy.value = true
     error.value = ''
+    notice.value = ''
     const version = revision
     try {
       const url = await gateway.decide(requestId, approved)
@@ -106,5 +139,10 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     }
   }
 
-  return { phase, details, busy, error, load, signIn, decide, signOut, resetSession }
+  function clearFeedback() {
+    error.value = ''
+    notice.value = ''
+  }
+
+  return { phase, details, busy, error, notice, load, signIn, signUp, decide, signOut, resetSession, clearFeedback }
 }

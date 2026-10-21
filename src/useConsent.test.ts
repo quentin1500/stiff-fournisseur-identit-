@@ -14,6 +14,7 @@ function fixture() {
   const gateway: IdentityGateway = {
     currentUser: vi.fn().mockResolvedValue(true),
     signIn: vi.fn().mockResolvedValue(undefined),
+    signUp: vi.fn().mockResolvedValue(true),
     details: vi.fn().mockResolvedValue(details),
     decide: vi.fn().mockResolvedValue('https://app.test/callback?code=abc&state=xyz'),
     signOut: vi.fn().mockResolvedValue(undefined),
@@ -42,6 +43,27 @@ describe('parcours de consentement', () => {
     expect(gateway.details).toHaveBeenCalledWith('request-123')
     expect(consent.phase.value).toBe('consent')
     expect(gateway.decide).not.toHaveBeenCalled()
+  })
+  it('inscrit puis reprend la demande sans autorisation automatique', async () => {
+    const { gateway, consent } = fixture()
+    vi.mocked(gateway.currentUser).mockResolvedValue(false)
+    await consent.load()
+    await consent.signUp(' user@example.com ', 'password')
+    expect(gateway.signUp).toHaveBeenCalledWith('user@example.com', 'password')
+    expect(gateway.details).toHaveBeenCalledWith('request-123')
+    expect(consent.phase.value).toBe('consent')
+    expect(gateway.decide).not.toHaveBeenCalled()
+  })
+  it('demande de verifier les emails sans session et sans reveler si le compte existe', async () => {
+    const { gateway, consent } = fixture()
+    vi.mocked(gateway.currentUser).mockResolvedValue(false)
+    vi.mocked(gateway.signUp).mockResolvedValue(false)
+    await consent.load()
+    await consent.signUp('user@example.com', 'password')
+    expect(consent.phase.value).toBe('login')
+    expect(consent.notice.value).toContain('email de confirmation')
+    expect(consent.error.value).toBe('')
+    expect(gateway.details).not.toHaveBeenCalled()
   })
   it.each([true, false])('transmet la decision %s et bloque le double clic', async (approved) => {
     const { gateway, navigate, consent } = fixture()
