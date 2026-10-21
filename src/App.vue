@@ -45,15 +45,15 @@ onUnmounted(() => unsubscribe?.())
         <img :src="'/identity.svg'" alt="" width="36" height="36" />
         <span>Stiff <strong>Identity</strong></span>
       </a>
-      <span class="header-label"><LockKeyhole :size="14" aria-hidden="true" /> Espace d'identite</span>
+      <span class="header-label"><LockKeyhole :size="14" aria-hidden="true" /> Coin des autorisations</span>
     </header>
 
     <main id="main" :aria-busy="busy">
-      <div class="eyebrow"><ShieldCheck :size="17" aria-hidden="true" /> STIFF IDENTITY</div>
+      <div class="eyebrow"><ShieldCheck :size="17" aria-hidden="true" /> STIFF IDENTITY <span>·</span> ACCÈS SOUS CONTRÔLE</div>
 
       <template v-if="phase === 'login'">
-        <h1>Votre compte.<br />Vos applications.</h1>
-        <p class="intro">Connectez-vous pour poursuivre votre demande d'acces.</p>
+        <h1>Salut.<br />C'est bien vous ?</h1>
+        <p class="intro">Connectez-vous et on reprend le fil. Pas de magie noire.</p>
         <form class="login-form" @submit.prevent="submitLogin">
           <label for="email">Adresse email</label>
           <input id="email" v-model="email" type="email" autocomplete="username" required :disabled="busy" />
@@ -71,21 +71,21 @@ onUnmounted(() => unsubscribe?.())
 
       <template v-else-if="phase === 'consent' && details">
         <div class="application-mark" aria-hidden="true">{{ clientName.slice(0, 1).toUpperCase() }}</div>
-        <h1>Autoriser<br /><span class="client-name">{{ clientName }}</span> ?</h1>
-        <p class="intro">Cette application souhaite acceder a votre compte.</p>
+        <h1>On laisse entrer<br /><span class="client-name">{{ clientName }}</span> ?</h1>
+        <p class="intro">Cette application frappe a la porte. Voici ce qu'elle demande.</p>
         <div class="account">
           <UserRound :size="20" aria-hidden="true" />
           <span>{{ details.user.email }}</span>
           <button type="button" class="icon-button" title="Changer de compte" aria-label="Changer de compte" :disabled="busy" @click="consent?.signOut()"><LogOut :size="18" aria-hidden="true" /></button>
         </div>
         <section class="permissions" aria-labelledby="permissions-title">
-          <h2 id="permissions-title">Acces demandes</h2>
+          <h2 id="permissions-title">Ce qu'elle demande</h2>
           <ul v-if="scopes.length">
             <li v-for="scope in scopes" :key="scope.name"><Check :size="18" aria-hidden="true" /><div>{{ scope.label }}<small>{{ scope.name }}</small></div></li>
           </ul>
           <p v-else>Aucune permission supplementaire demandee.</p>
         </section>
-        <p class="destination">Retour vers <strong>{{ returnHost }}</strong></p>
+        <p class="destination">Et apres, retour vers <strong>{{ returnHost }}</strong></p>
         <p v-if="error" role="alert" class="error">{{ error }}</p>
         <div class="actions">
           <button type="button" class="secondary" :disabled="busy" @click="consent?.decide(false)"><X :size="17" aria-hidden="true" /> Refuser</button>
@@ -95,7 +95,7 @@ onUnmounted(() => unsubscribe?.())
 
       <template v-else-if="phase === 'loading' || phase === 'redirecting'">
         <div class="status-mark"><ShieldCheck :size="32" aria-hidden="true" /></div>
-        <h1>{{ phase === 'redirecting' ? 'Vous y etes presque.' : 'Un instant.' }}</h1>
+        <h1>{{ phase === 'redirecting' ? 'Vous y etes presque.' : 'On verifie tout ca.' }}</h1>
         <p role="status" class="intro">{{ phase === 'redirecting' ? 'Retour vers votre application...' : 'Verification de votre demande...' }}</p>
       </template>
 
@@ -107,6 +107,6 @@ onUnmounted(() => unsubscribe?.())
       </template>
     </main>
 
-    <footer><span>Stiff Identity</span><span><ShieldCheck :size="14" aria-hidden="true" /> Votre identite, sous votre controle.</span></footer>
+    <footer><span>Stiff Identity <span class="footer-star" aria-hidden="true">✳</span></span><span><ShieldCheck :size="14" aria-hidden="true" /> Un peu de pixels, beaucoup de precautions.</span></footer>
   </div>
 </template>

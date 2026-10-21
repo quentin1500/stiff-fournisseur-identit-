@@ -35,6 +35,10 @@ Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirect
 | F12 | Accessibilite | Navigation clavier, focus visible, erreurs role=alert, chargement role=status, boutons nommes, vues mobiles et mouvement reduit. |
 | F13 | Configuration absente | Aucun faux succes ni mode de demonstration en production ; afficher le service indisponible. |
 
+## Direction visuelle
+
+L'interface adopte une identite noir et bleu clair, avec un fond sombre, un panneau clair, des contours volontairement irreguliers et des microcopies legerement enjouees. Le logo et le favicon utilisent une tete de requin stylisee originale. Le ton reste clair et les informations de consentement restent prioritaires. Cette direction ne doit pas reduire le contraste, la lisibilite, la navigation clavier ni l'adaptation mobile ; elle n'ajoute aucun contenu distant et ne change pas le parcours OAuth.
+
 L'URL racine ne cree pas de demande : elle affiche le meme traitement d'absence de demande (ou de configuration). Ce n'est pas une page marketing.
 
 ## Hors perimetre
