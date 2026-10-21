@@ -28,7 +28,7 @@ Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirect
 | F05 | Transparence | Nom du client, compte, scopes standards et inconnus, et domaine de callback proviennent du serveur. |
 | F06 | Decision | Autoriser et refuser appellent les methodes distinctes du SDK une seule fois par action en cours. |
 | F07 | Consentement existant | La variante redirect_url declenche un retour valide, sans clic supplementaire. |
-| F08 | Retour securise | Seules les URL Supabase HTTPS sans credentials sont suivies ; HTTP loopback uniquement en developpement. |
+| F08 | Retour securise | Seules les URL fournies par Supabase en HTTPS sans credentials ou HTTP loopback (`localhost`, `127.0.0.1`, `[::1]`) sans credentials sont suivies ; le loopback est accepte aussi en production pour les callbacks de test enregistres cote Supabase. |
 | F09 | Changement de compte | Le bouton avec icone de sortie ferme uniquement la session locale du fournisseur, sans abandonner la demande. |
 | F10 | Erreurs | Demande expiree, acces impossible ou reseau indisponible affichent une erreur sans exposer la reponse technique brute. Une decision echouee peut etre retentee ; une demande invalide invite a recommencer depuis l'application. |
 | F11 | Session perdue | SIGNED_OUT efface les details et invalide les resultats en vol avant retour a la connexion. |

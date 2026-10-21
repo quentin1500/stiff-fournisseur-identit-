@@ -1,6 +1,6 @@
 # ADR 0002 : delegation OAuth a Supabase
 
-- Statut : Accepte
+- Statut : Remplace par [ADR 0005](0005-redirections-loopback.md)
 - Date : 2026-10-20
 
 ## Contexte
@@ -13,7 +13,7 @@ Utiliser `@supabase/supabase-js` avec une URL HTTPS et une cle `sb_publishable_.
 
 Lire un seul `authorization_id` non vide. Apres connexion, appeler `auth.oauth.getAuthorizationDetails`. Afficher exclusivement le client, le compte, `redirect_uri` et `scope` fournis par ce resultat. Afficher aussi les scopes inconnus sans les masquer ou pretendre les comprendre. Traiter la variante `redirect_url` comme un consentement deja gere par Supabase.
 
-L'approbation exige un clic explicite, sauf consentement preexistant renvoye par Supabase. Le refus appelle `denyAuthorization`. Les deux appels passent `skipBrowserRedirect: true`. Naviguer uniquement vers la `redirect_url` retournee par Supabase, apres verification du protocole et absence de credentials URL. Autoriser HTTP uniquement sur loopback en mode developpement. Ne pas reconstruire le code, le state ou l'URL de callback.
+L'approbation exige un clic explicite, sauf consentement preexistant renvoye par Supabase. Le refus appelle `denyAuthorization`. Les deux appels passent `skipBrowserRedirect: true`. Naviguer uniquement vers l'URL retournee par Supabase, apres verification du protocole et absence de credentials URL. Ne pas reconstruire le code, le state ou l'URL de callback. La politique de protocole et de loopback est precisee par l'ADR 0005.
 
 ## Alternatives
 

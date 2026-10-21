@@ -4,7 +4,7 @@
 
 - La query string ne fournit qu'un identifiant de demande opaque. Ne jamais faire confiance a des parametres `redirect_uri`, `client_name`, `scope`, `code` ou `state` ajoutes a cette page.
 - Supabase authentifie l'utilisateur et valide la demande et le callback enregistre. Le frontend n'est pas une barriere d'autorisation metier. Configurer RLS, audiences et permissions des tokens cote Supabase.
-- La redirection est exclusivement le resultat du SDK officiel, avec HTTPS et sans credentials. Ce filtre ne remplace pas l'enregistrement exact des URI cote Supabase. Les schemes natifs mobiles sont volontairement refuses en V1.
+- La redirection est exclusivement une URL de callback fournie par le SDK officiel, sans credentials. HTTPS est accepte ; HTTP est limite aux hotes loopback exacts `localhost`, `127.0.0.1` et `[::1]`, y compris en production, pour permettre les callbacks de test enregistres cote Supabase. Les autres hotes HTTP et les schemes natifs mobiles sont refuses. Ce filtre ne remplace pas l'enregistrement exact des URI cote Supabase, qui valide le callback du client OAuth.
 - La cle publishable est publique par nature. Jamais de cle secret, service_role, client_secret ou JWT privilegie dans un fichier VITE, une variable de build ou le navigateur.
 
 ## Navigateur

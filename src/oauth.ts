@@ -7,10 +7,10 @@ export function authorizationIdFrom(search: string): string {
   return value
 }
 
-export function safeRedirect(value: string, development = false): string {
+export function safeRedirect(value: string): string {
   const url = new URL(value)
-  const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-  if (url.username || url.password || (url.protocol !== 'https:' && !(development && local && url.protocol === 'http:'))) {
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+  if (url.username || url.password || (url.protocol !== 'https:' && !(loopback && url.protocol === 'http:'))) {
     throw new Error('Adresse de retour non autorisee.')
   }
   return url.href

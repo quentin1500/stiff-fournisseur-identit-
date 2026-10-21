@@ -6,6 +6,7 @@
 | [0002](0002-supabase-oauth.md) | Supabase OAuth Server et SDK officiel exclusivement | Accepte |
 | [0003](0003-session-et-securite.md) | Connexion email/mot de passe et session navigateur persistante | Accepte |
 | [0004](0004-documentation-et-qualite.md) | Documentation normative, consignes IA et controles CI | Accepte |
+| [0005](0005-redirections-loopback.md) | Redirections HTTP de loopback fournies par Supabase, y compris en production | Accepte |
 
 Date des decisions initiales : 2026-10-20. Choix de stack, mode de connexion et domaine personnalise confirmes par le porteur du projet. Nom « Stiff Identity » et interface francaise retenus par defaut, modifiables sans changement d'architecture.
 

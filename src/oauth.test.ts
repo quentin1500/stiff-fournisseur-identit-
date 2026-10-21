@@ -17,10 +17,15 @@ describe('redirections', () => {
   it.each(['javascript:alert(1)', 'data:text/html,test', '//app.test', '/callback', 'http://app.test', 'https://user:pass@app.test'])('bloque %s', (url) => {
     expect(() => safeRedirect(url)).toThrow()
   })
-  it('reserve HTTP localhost au developpement explicite', () => {
-    expect(() => safeRedirect('http://localhost:3000/callback')).toThrow()
-    expect(safeRedirect('http://localhost:3000/callback', true)).toBe('http://localhost:3000/callback')
-    expect(() => safeRedirect('http://app.test', true)).toThrow()
+  it.each([
+    'http://localhost:3000/oidc/auth/callback',
+    'http://127.0.0.1:3000/oidc/auth/callback',
+    'http://[::1]:3000/oidc/auth/callback',
+  ])('autorise le loopback HTTP fourni par Supabase en production : %s', (url) => {
+    expect(safeRedirect(url)).toBe(url)
+  })
+  it('refuse les identifiants URL meme sur loopback', () => {
+    expect(() => safeRedirect('http://user:password@localhost:3000/callback')).toThrow()
   })
 })
 

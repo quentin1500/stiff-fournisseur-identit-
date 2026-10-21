@@ -19,7 +19,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
   }
 
   function redirect(url: string) {
-    const target = safeRedirect(url, import.meta.env.DEV)
+    const target = safeRedirect(url)
     phase.value = 'redirecting'
     navigate(target)
   }
@@ -29,7 +29,7 @@ export function useConsent(gateway: IdentityGateway, search: string, navigate: (
     if (version !== revision) return
     if ('redirect_url' in result) return redirect(result.redirect_url)
     if (result.authorization_id !== requestId) throw new Error('Mismatched request')
-    safeRedirect(result.redirect_uri, import.meta.env.DEV)
+    safeRedirect(result.redirect_uri)
     details.value = result
     phase.value = 'consent'
   }
