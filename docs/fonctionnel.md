@@ -35,6 +35,7 @@ Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirect
 | F12 | Accessibilite | Navigation clavier, focus visible, erreurs role=alert, chargement role=status, boutons nommes, vues mobiles et mouvement reduit. |
 | F13 | Configuration absente | Aucun faux succes ni mode de demonstration en production ; afficher le service indisponible. |
 | F14 | Inscription | Depuis la mire, un utilisateur peut basculer vers un formulaire email/mot de passe avec autocompletion adaptee. Une session retournee par Supabase reprend la demande sans l'autoriser ; sans session, un message generique invite a verifier l'email et revenir se connecter, sans reveler si l'adresse existe. |
+| F15 | Retour de confirmation | Le lien de confirmation email revient vers `/welcome/`, qui confirme la creation du compte et invite l'utilisateur a reprendre sa demande dans l'onglet initial. Cette page est une entree HTML statique, sans routeur ni traitement du callback d'authentification. |
 
 ## Direction visuelle
 

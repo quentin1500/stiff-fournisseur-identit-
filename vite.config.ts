@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         consent: fileURLToPath(new URL('./oauth/consent/index.html', import.meta.url)),
+        welcome: fileURLToPath(new URL('./welcome/index.html', import.meta.url)),
       },
     },
   },

@@ -37,7 +37,11 @@ export function createIdentityGateway(): IdentityGateway {
       if (error) throw error
     },
     async signUp(email, password) {
-      const { data, error } = await client.auth.signUp({ email, password })
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/welcome/` },
+      })
       if (error) throw error
       return Boolean(data.session)
     },

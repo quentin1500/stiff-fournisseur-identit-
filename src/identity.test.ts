@@ -47,7 +47,11 @@ describe('contrat Supabase', () => {
   it('utilise signUp et indique si Supabase a ouvert une session', async () => {
     const { auth, gateway } = fixture()
     expect(await gateway.signUp('user@example.com', 'password')).toBe(true)
-    expect(auth.signUp).toHaveBeenCalledWith({ email: 'user@example.com', password: 'password' })
+    expect(auth.signUp).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      password: 'password',
+      options: { emailRedirectTo: `${window.location.origin}/welcome/` },
+    })
     auth.signUp.mockResolvedValue({ data: { session: null }, error: null })
     expect(await gateway.signUp('new@example.com', 'password')).toBe(false)
   })

@@ -1,6 +1,6 @@
 # ADR 0001 : frontend statique
 
-- Statut : Accepte
+- Statut : Partiellement remplace par [ADR 0007](0007-page-bienvenue-statique.md) pour le nombre d'entrees HTML
 - Date : 2026-10-20
 
 ## Contexte
