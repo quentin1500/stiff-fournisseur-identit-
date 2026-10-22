@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, LogOut, ShieldCheck, UserRound, X } from '@lucide/vue'
 import { createIdentityGateway } from './identity'
 import { describeScopes } from './oauth'
@@ -8,7 +8,15 @@ import { useConsent } from './useConsent'
 const email = ref('')
 const password = ref('')
 const reveal = ref(false)
-const authMode = ref<'login' | 'signup'>('login')
+const authMode = ref<'login' | 'signup' | 'reset'>('login')
+const resetConfirmation = ref(false)
+const resetBusy = ref(false)
+const resetError = ref('')
+const resetNotice = ref('')
+const resetConfirmationPanel = ref<HTMLElement | null>(null)
+const forgotPasswordButton = ref<HTMLButtonElement | null>(null)
+const resetEmailInput = ref<HTMLInputElement | null>(null)
+const resetContinueButton = ref<HTMLButtonElement | null>(null)
 const setupError = ref('')
 let unsubscribe: (() => void) | undefined
 const gateway = (() => {
@@ -18,7 +26,7 @@ const gateway = (() => {
 const consent = gateway ? useConsent(gateway, window.location.search, (url) => window.location.assign(url)) : null
 const phase = computed(() => consent?.phase.value ?? 'error')
 const details = computed(() => consent?.details.value)
-const busy = computed(() => consent?.busy.value ?? false)
+const busy = computed(() => (consent?.busy.value ?? false) || resetBusy.value)
 const error = computed(() => setupError.value || consent?.error.value)
 const notice = computed(() => consent?.notice.value)
 const scopes = computed(() => describeScopes(details.value?.scope ?? ''))
@@ -39,11 +47,66 @@ async function submitSignup() {
   await consent?.signUp(email.value, secret)
 }
 
-function switchAuthMode() {
-  authMode.value = authMode.value === 'login' ? 'signup' : 'login'
+async function switchAuthMode() {
+  const returningFromReset = authMode.value === 'reset'
+  authMode.value = returningFromReset ? 'login' : (authMode.value === 'login' ? 'signup' : 'login')
+  resetConfirmation.value = false
   password.value = ''
   reveal.value = false
+  resetError.value = ''
+  resetNotice.value = ''
   consent?.clearFeedback()
+  if (returningFromReset) {
+    await nextTick()
+    forgotPasswordButton.value?.focus()
+  }
+}
+
+async function showResetForm() {
+  authMode.value = 'reset'
+  resetConfirmation.value = false
+  password.value = ''
+  reveal.value = false
+  resetError.value = ''
+  resetNotice.value = ''
+  consent?.clearFeedback()
+  await nextTick()
+  resetEmailInput.value?.focus()
+}
+
+async function showResetConfirmation() {
+  resetConfirmation.value = true
+  resetError.value = ''
+  resetNotice.value = ''
+  await nextTick()
+  resetConfirmationPanel.value?.focus()
+}
+
+async function cancelResetConfirmation() {
+  resetConfirmation.value = false
+  await nextTick()
+  resetContinueButton.value?.focus()
+}
+
+async function submitPasswordReset() {
+  if (busy.value || authMode.value !== 'reset') return
+  if (!resetConfirmation.value) {
+    await showResetConfirmation()
+    return
+  }
+  if (!gateway) return
+  resetBusy.value = true
+  resetError.value = ''
+  resetNotice.value = ''
+  try {
+    await gateway.requestPasswordReset(email.value.trim())
+    resetConfirmation.value = false
+    resetNotice.value = 'Si un compte correspond à cette adresse, un email de réinitialisation sera envoyé.'
+  } catch {
+    resetError.value = 'La demande de réinitialisation n’a pas pu être envoyée. Réessayez plus tard.'
+  } finally {
+    resetBusy.value = false
+  }
 }
 
 onMounted(() => {
@@ -68,22 +131,42 @@ onUnmounted(() => unsubscribe?.())
       <div class="eyebrow"><ShieldCheck :size="17" aria-hidden="true" /> STIFF IDENTITY <span>·</span> ACCÈS SOUS CONTRÔLE</div>
 
       <template v-if="phase === 'login'">
-        <h1>{{ authMode === 'signup' ? 'Bienvenue.' : 'Salut.' }}<br />{{ authMode === 'signup' ? 'On fait connaissance ?' : "C'est bien vous ?" }}</h1>
-        <p class="intro">{{ authMode === 'signup' ? 'Creez votre compte pour poursuivre.' : 'Connectez-vous et on reprend le fil. Pas de magie noire.' }}</p>
-        <form class="login-form" @submit.prevent="authMode === 'signup' ? submitSignup() : submitLogin()">
+        <h1 v-if="authMode === 'reset'">Mot de passe oublié ?</h1>
+        <h1 v-else>{{ authMode === 'signup' ? 'Bienvenue.' : 'Salut.' }}<br />{{ authMode === 'signup' ? 'On fait connaissance ?' : "C'est bien vous ?" }}</h1>
+        <p class="intro">{{ authMode === 'reset' ? 'Indiquez votre adresse email pour recevoir un lien de réinitialisation.' : (authMode === 'signup' ? 'Creez votre compte pour poursuivre.' : 'Connectez-vous et on reprend le fil. Pas de magie noire.') }}</p>
+        <form class="login-form" @submit.prevent="authMode === 'reset' ? submitPasswordReset() : (authMode === 'signup' ? submitSignup() : submitLogin())">
           <label for="email">Adresse email</label>
-          <input id="email" v-model="email" type="email" autocomplete="username" required :disabled="busy" />
-          <label for="password">Mot de passe</label>
-          <div class="password-field">
-            <input id="password" v-model="password" :type="reveal ? 'text' : 'password'" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" required :disabled="busy" />
-            <button type="button" class="icon-button" :aria-label="reveal ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" :title="reveal ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" :aria-pressed="reveal" :disabled="busy" @click="reveal = !reveal">
-              <component :is="reveal ? EyeOff : Eye" :size="19" aria-hidden="true" />
-            </button>
-          </div>
-          <p v-if="error" role="alert" class="error">{{ error }}</p>
-          <p v-if="notice" role="status" class="notice">{{ notice }}</p>
-          <button class="primary" :disabled="busy" type="submit">{{ busy ? (authMode === 'signup' ? 'Creation du compte...' : 'Connexion en cours...') : (authMode === 'signup' ? 'Creer mon compte' : 'Se connecter') }} <ArrowRight :size="18" aria-hidden="true" /></button>
-          <button class="secondary auth-switch" :disabled="busy" type="button" @click="switchAuthMode()">{{ authMode === 'signup' ? 'J’ai deja un compte' : 'Creer un compte' }}</button>
+          <input id="email" ref="resetEmailInput" v-model="email" type="email" autocomplete="username" required :disabled="busy" />
+          <template v-if="authMode !== 'reset'">
+            <label for="password">Mot de passe</label>
+            <div class="password-field">
+              <input id="password" v-model="password" :type="reveal ? 'text' : 'password'" :autocomplete="authMode === 'signup' ? 'new-password' : 'current-password'" required :disabled="busy" />
+              <button type="button" class="icon-button" :aria-label="reveal ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" :title="reveal ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" :aria-pressed="reveal" :disabled="busy" @click="reveal = !reveal">
+                <component :is="reveal ? EyeOff : Eye" :size="19" aria-hidden="true" />
+              </button>
+            </div>
+            <p v-if="error" role="alert" class="error">{{ error }}</p>
+            <p v-if="resetError" role="alert" class="error">{{ resetError }}</p>
+            <p v-if="notice || resetNotice" role="status" class="notice">{{ notice || resetNotice }}</p>
+            <button class="primary" :disabled="busy" type="submit">{{ busy ? (authMode === 'signup' ? 'Creation du compte...' : 'Connexion en cours...') : (authMode === 'signup' ? 'Creer mon compte' : 'Se connecter') }} <ArrowRight :size="18" aria-hidden="true" /></button>
+            <button v-if="authMode === 'login'" ref="forgotPasswordButton" class="secondary forgot-password" :disabled="busy" type="button" @click="showResetForm()">Mot de passe oublié ?</button>
+            <button class="secondary auth-switch" :disabled="busy" type="button" @click="switchAuthMode()">{{ authMode === 'signup' ? 'J’ai deja un compte' : 'Creer un compte' }}</button>
+          </template>
+          <template v-else-if="!resetConfirmation">
+            <p v-if="resetError" role="alert" class="error">{{ resetError }}</p>
+            <p v-if="resetNotice" role="status" class="notice">{{ resetNotice }}</p>
+            <button ref="resetContinueButton" class="primary" :disabled="busy" type="submit">Continuer <ArrowRight :size="18" aria-hidden="true" /></button>
+            <button class="secondary auth-switch" :disabled="busy" type="button" @click="switchAuthMode()">Retour à la connexion</button>
+          </template>
+          <section v-else ref="resetConfirmationPanel" class="reset-confirmation" tabindex="-1" aria-labelledby="reset-confirmation-title">
+            <h2 id="reset-confirmation-title">Confirmer l’envoi</h2>
+            <p>Un email de réinitialisation sera demandé pour <strong>{{ email.trim() }}</strong>.</p>
+            <p v-if="resetError" role="alert" class="error">{{ resetError }}</p>
+            <div class="actions">
+              <button class="secondary" :disabled="busy" type="button" @click="cancelResetConfirmation()">Annuler</button>
+              <button class="primary" :disabled="busy" type="submit">{{ busy ? 'Envoi en cours...' : 'Confirmer l’envoi' }} <ArrowRight :size="18" aria-hidden="true" /></button>
+            </div>
+          </section>
         </form>
       </template>
 

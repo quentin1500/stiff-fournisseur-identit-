@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
-import { createIdentityGateway } from './identity'
+import { createIdentityGateway, createPasswordRecoveryGateway } from './identity'
 
 vi.mock('@supabase/supabase-js', () => ({ createClient: vi.fn() }))
 
@@ -14,6 +14,8 @@ function fixture() {
     getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user' } }, error: null }),
     signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
     signUp: vi.fn().mockResolvedValue({ data: { session: { access_token: 'test' } as { access_token: string } | null }, error: null }),
+    resetPasswordForEmail: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    updateUser: vi.fn().mockResolvedValue({ data: {}, error: null }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
     onAuthStateChange: vi.fn(),
     oauth: {
@@ -54,6 +56,39 @@ describe('contrat Supabase', () => {
     })
     auth.signUp.mockResolvedValue({ data: { session: null }, error: null })
     expect(await gateway.signUp('new@example.com', 'password')).toBe(false)
+  })
+  it('demande la réinitialisation avec une redirection vers la page statique', async () => {
+    const { auth, gateway } = fixture()
+    await gateway.requestPasswordReset('user@example.com')
+    expect(auth.resetPasswordForEmail).toHaveBeenCalledWith('user@example.com', {
+      redirectTo: `${window.location.origin}/update-password/`,
+    })
+  })
+  it('active le traitement SDK du callback uniquement dans la page de récupération', async () => {
+    const { auth } = fixture()
+    const unsubscribe = vi.fn()
+    auth.onAuthStateChange.mockImplementation((callback) => {
+      callback('PASSWORD_RECOVERY', null)
+      return { data: { subscription: { unsubscribe } } }
+    })
+    const recovery = createPasswordRecoveryGateway()
+    expect(createClient).toHaveBeenLastCalledWith('https://identity.supabase.co', 'sb_publishable_public_test_key', {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
+    })
+    expect(await recovery.recoverySessionAvailable()).toBe(true)
+    expect(auth.getSession).toHaveBeenCalledOnce()
+    expect(unsubscribe).toHaveBeenCalledOnce()
+    await recovery.updatePassword('new-password')
+    expect(auth.updateUser).toHaveBeenCalledWith({ password: 'new-password' })
+  })
+  it('n accepte pas une session existante sans événement de récupération', async () => {
+    const { auth } = fixture()
+    auth.onAuthStateChange.mockImplementation((callback) => {
+      callback('INITIAL_SESSION', null)
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+    const recovery = createPasswordRecoveryGateway()
+    expect(await recovery.recoverySessionAvailable()).toBe(false)
   })
   it('verifie l utilisateur de la session existante sur le serveur', async () => {
     const { auth, gateway } = fixture()

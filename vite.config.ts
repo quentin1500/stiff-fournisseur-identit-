@@ -11,6 +11,7 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         consent: fileURLToPath(new URL('./oauth/consent/index.html', import.meta.url)),
         welcome: fileURLToPath(new URL('./welcome/index.html', import.meta.url)),
+        updatePassword: fileURLToPath(new URL('./update-password/index.html', import.meta.url)),
       },
     },
   },

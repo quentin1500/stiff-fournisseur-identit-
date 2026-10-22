@@ -17,6 +17,8 @@ Stiff Identity presente en francais la connexion et le consentement des utilisat
 
 Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirection sans reafficher les boutons. L'interface ne deduit jamais elle-meme un consentement preexistant.
 
+Depuis la mire de connexion, l'utilisateur peut demander la réinitialisation de son mot de passe après une confirmation explicite de l'envoi. Le lien reçu ouvre la page statique `/update-password/`, qui permet de définir et confirmer un nouveau mot de passe.
+
 ## Fonctions et criteres d'acceptation
 
 | ID | Fonction | Critere |
@@ -36,6 +38,8 @@ Si Supabase signale qu'un consentement existe deja, le frontend suit sa redirect
 | F13 | Configuration absente | Aucun faux succes ni mode de demonstration en production ; afficher le service indisponible. |
 | F14 | Inscription | Depuis la mire, un utilisateur peut basculer vers un formulaire email/mot de passe avec autocompletion adaptee. Une session retournee par Supabase reprend la demande sans l'autoriser ; sans session, un message generique invite a verifier l'email et revenir se connecter, sans reveler si l'adresse existe. |
 | F15 | Retour de confirmation | Le lien de confirmation email revient vers `/welcome/`, qui confirme la creation du compte et invite l'utilisateur a reprendre sa demande dans l'onglet initial. Cette page est une entree HTML statique, sans routeur ni traitement du callback d'authentification. |
+| F16 | Demande de réinitialisation | Depuis le mode connexion, le bouton « Mot de passe oublié ? » ouvre un écran avec uniquement le champ « Adresse email ». Après sa saisie, une confirmation explicite est demandée avant tout appel à `resetPasswordForEmail`. L'utilisateur peut revenir à la connexion ou annuler la confirmation. Le retour est fixé par l'application vers `/update-password/`, et le message de résultat ne révèle pas si l'adresse possède un compte. |
+| F17 | Mise à jour du mot de passe | `/update-password/` est une entrée HTML statique. Le SDK Supabase traite le callback de récupération sur cette seule page ; un utilisateur muni d'une session valide peut saisir et confirmer un nouveau mot de passe, transmis par `updateUser`. Les erreurs techniques ne sont pas exposées. |
 
 ## Direction visuelle
 
@@ -45,8 +49,8 @@ L'URL racine ne cree pas de demande : elle affiche le meme traitement d'absence 
 
 ## Hors perimetre
 
-Invitation, mot de passe oublie, recuperation, MFA, fournisseurs sociaux, gestion des applications clientes, historique/revocation de consentement, gestion de profil, deconnexion globale SSO, API metier et regles RLS. Le parcours depend du reseau ; aucun mode hors ligne.
+Invitation, MFA, fournisseurs sociaux, gestion des applications clientes, historique/revocation de consentement, gestion de profil, deconnexion globale SSO, API metier et regles RLS. Le parcours depend du reseau ; aucun mode hors ligne.
 
 ## Verification
 
-Les tests `src/oauth.test.ts`, `src/useConsent.test.ts`, `src/App.test.ts` et `src/identity.test.ts` couvrent les garde-fous, les transitions, les interactions principales et les options sensibles du SDK. Le lint et la compilation sont obligatoires. Le protocole reel, la configuration Supabase, le rechargement GitHub Pages avec query et le clavier/affichage doivent aussi etre verifies selon [le guide d'exploitation](exploitation.md).
+Les tests `src/oauth.test.ts`, `src/useConsent.test.ts`, `src/App.test.ts`, `src/UpdatePassword.test.ts` et `src/identity.test.ts` couvrent les garde-fous, les transitions, les interactions principales et les options sensibles du SDK. Le lint et la compilation sont obligatoires. Le protocole réel, la configuration Supabase, le rechargement GitHub Pages avec query et le clavier/affichage doivent aussi être vérifiés selon [le guide d'exploitation](exploitation.md).

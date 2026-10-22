@@ -1,6 +1,6 @@
 # ADR 0006 : inscription email
 
-- Statut : Accepte
+- Statut : Partiellement remplace par [ADR 0008](0008-recuperation-mot-de-passe.md) pour la recuperation de compte
 - Date : 2026-10-21
 - Remplace les decisions de l'ADR 0003 sur le provisionnement externe des comptes et l'absence d'inscription.
 
@@ -22,6 +22,6 @@ Si Supabase retourne une session, reprendre le chargement de la demande OAuth et
 
 ## Consequences
 
-L'inscription publique doit etre activee et protegee cote Supabase. Les limites d'abus, les quotas et l'envoi des emails sont sous la responsabilite de l'operateur. Avec confirmation email, l'utilisateur doit revenir manuellement a sa demande apres confirmation pour ouvrir sa session. CAPTCHA, recuperation de compte et MFA restent hors perimetre.
+L'inscription publique doit etre activee et protegee cote Supabase. Les limites d'abus, les quotas et l'envoi des emails sont sous la responsabilite de l'operateur. Avec confirmation email, l'utilisateur doit revenir manuellement a sa demande apres confirmation pour ouvrir sa session. CAPTCHA et MFA restent hors perimetre ; la recuperation de compte est precisee par l'ADR 0008.
 
 Le reste des decisions de session de l'ADR 0003 demeure applicable.

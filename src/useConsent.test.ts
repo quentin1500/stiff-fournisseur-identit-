@@ -15,6 +15,7 @@ function fixture() {
     currentUser: vi.fn().mockResolvedValue(true),
     signIn: vi.fn().mockResolvedValue(undefined),
     signUp: vi.fn().mockResolvedValue(true),
+    requestPasswordReset: vi.fn().mockResolvedValue(undefined),
     details: vi.fn().mockResolvedValue(details),
     decide: vi.fn().mockResolvedValue('https://app.test/callback?code=abc&state=xyz'),
     signOut: vi.fn().mockResolvedValue(undefined),

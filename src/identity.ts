@@ -7,21 +7,31 @@ export interface IdentityGateway {
   currentUser(): Promise<boolean>
   signIn(email: string, password: string): Promise<void>
   signUp(email: string, password: string): Promise<boolean>
+  requestPasswordReset(email: string): Promise<void>
   details(id: string): Promise<Authorization>
   decide(id: string, approved: boolean): Promise<string>
   signOut(): Promise<void>
   onSignedOut(callback: () => void): () => void
 }
 
-export function createIdentityGateway(): IdentityGateway {
+export interface PasswordRecoveryGateway {
+  recoverySessionAvailable(): Promise<boolean>
+  updatePassword(password: string): Promise<void>
+}
+
+function createSupabaseClient(detectSessionInUrl: boolean) {
   const url = import.meta.env.VITE_SUPABASE_URL
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
   if (!url || !key || !key.startsWith('sb_publishable_') || key.includes('replace_me') || new URL(url).protocol !== 'https:') {
     throw new Error('Le service de connexion est indisponible. Contactez son administrateur.')
   }
-  const client = createClient(url, key, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' },
+  return createClient(url, key, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl, flowType: 'pkce' },
   })
+}
+
+export function createIdentityGateway(): IdentityGateway {
+  const client = createSupabaseClient(false)
 
   return {
     async currentUser() {
@@ -45,6 +55,12 @@ export function createIdentityGateway(): IdentityGateway {
       if (error) throw error
       return Boolean(data.session)
     },
+    async requestPasswordReset(email) {
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/update-password/`,
+      })
+      if (error) throw error
+    },
     async details(id) {
       const { data, error } = await client.auth.oauth.getAuthorizationDetails(id)
       if (error) throw error
@@ -67,6 +83,31 @@ export function createIdentityGateway(): IdentityGateway {
         if (event === 'SIGNED_OUT') callback()
       })
       return () => data.subscription.unsubscribe()
+    },
+  }
+}
+
+export function createPasswordRecoveryGateway(): PasswordRecoveryGateway {
+  const client = createSupabaseClient(true)
+  let recoveryDetected = false
+  const { data: { subscription } } = client.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') recoveryDetected = true
+  })
+
+  return {
+    async recoverySessionAvailable() {
+      try {
+        const { data, error } = await client.auth.getSession()
+        if (error) throw error
+        await new Promise<void>((resolve) => setTimeout(resolve, 0))
+        return Boolean(data.session) && recoveryDetected
+      } finally {
+        subscription.unsubscribe()
+      }
+    },
+    async updatePassword(password) {
+      const { error } = await client.auth.updateUser({ password })
+      if (error) throw error
     },
   }
 }

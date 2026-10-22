@@ -14,6 +14,7 @@ beforeEach(() => {
     currentUser: vi.fn().mockResolvedValue(false),
     signIn: vi.fn().mockResolvedValue(undefined),
     signUp: vi.fn().mockResolvedValue(false),
+    requestPasswordReset: vi.fn().mockResolvedValue(undefined),
     details: vi.fn().mockResolvedValue({
       authorization_id: 'request-123',
       redirect_uri: 'https://app.test/callback',
@@ -28,7 +29,13 @@ beforeEach(() => {
   vi.mocked(createIdentityGateway).mockReturnValue(gateway)
 })
 
-afterEach(() => { wrapper?.unmount(); wrapper = undefined })
+afterEach(() => {
+  if (!wrapper) return
+  const element = wrapper.element
+  wrapper.unmount()
+  element.remove()
+  wrapper = undefined
+})
 
 describe('interface', () => {
   it('connecte, efface le mot de passe et affiche les permissions sans interpreter du HTML', async () => {
@@ -91,6 +98,48 @@ describe('interface', () => {
     await flushPromises()
     expect(wrapper.get('[role="alert"]').text()).toContain('Inscription impossible')
     expect(wrapper.text()).not.toContain('email already registered')
+  })
+
+  it('affiche uniquement le champ email avant de demander la confirmation de réinitialisation', async () => {
+    wrapper = mount(App, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.get('#email').setValue('user@example.com')
+    await wrapper.get('button.forgot-password').trigger('click')
+    expect(wrapper.get('h1').text()).toBe('Mot de passe oublié ?')
+    expect(wrapper.findAll('input')).toHaveLength(1)
+    expect(wrapper.get('input').attributes('type')).toBe('email')
+    expect(wrapper.find('#password').exists()).toBe(false)
+    expect(gateway.requestPasswordReset).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(wrapper.get('#email').element)
+
+    await wrapper.get('form').trigger('submit')
+    expect(wrapper.text()).toContain('Confirmer l’envoi')
+    expect(wrapper.text()).toContain('user@example.com')
+    expect(gateway.requestPasswordReset).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(wrapper.get('.reset-confirmation').element)
+
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(gateway.requestPasswordReset).toHaveBeenCalledExactlyOnceWith('user@example.com')
+    expect(wrapper.get('[role="status"]').text()).toContain('Si un compte correspond')
+  })
+
+  it('permet d annuler et masque les erreurs techniques lors de la réinitialisation', async () => {
+    vi.mocked(gateway.requestPasswordReset).mockRejectedValue(new Error('email provider failure'))
+    wrapper = mount(App, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.get('#email').setValue('user@example.com')
+    await wrapper.get('button.forgot-password').trigger('click')
+    await wrapper.get('form').trigger('submit')
+    await wrapper.get('.reset-confirmation button.secondary').trigger('click')
+    expect(wrapper.get('h1').text()).toBe('Mot de passe oublié ?')
+    expect(wrapper.findAll('input')).toHaveLength(1)
+    expect(document.activeElement).toBe(wrapper.get('button[type="submit"]').element)
+    await wrapper.get('form').trigger('submit')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('[role="alert"]').text()).toContain('n’a pas pu être envoyée')
+    expect(wrapper.text()).not.toContain('email provider failure')
   })
 
   it('refuse depuis le bouton prevu et affiche une erreur non technique', async () => {

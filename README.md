@@ -23,7 +23,7 @@ La route `/oauth/consent/?authorization_id=...` est appelee par Supabase, pas di
 
 - `npm run check` : lint, tests et compilation.
 - `npm test` : tests automatises sans reseau Supabase.
-- `npm run build` : generation de `dist/`, dont `oauth/consent/index.html`.
+- `npm run build` : generation de `dist/`, dont `oauth/consent/index.html` et `update-password/index.html`.
 - `npm run preview` : servir le resultat compile localement.
 - `npm audit` : controle des dependances.
 
@@ -35,4 +35,4 @@ La route `/oauth/consent/?authorization_id=...` est appelee par Supabase, pas di
 - [Securite et limites](docs/securite.md).
 - [Regles permanentes pour les IA](AGENTS.md).
 
-Les comptes sont provisionnes hors de ce frontend. Aucun secret de serveur, backend, inscription, recuperation de mot de passe ou MFA n'est inclus. Une session est persistee par le SDK dans le navigateur du fournisseur pour la continuite SSO ; consulter les limites de securite avant mise en production.
+Les comptes et les emails d'inscription et de récupération sont gérés par Supabase ; aucun secret de serveur ni backend n'est inclus. La récupération de mot de passe se fait depuis la mire de connexion et aboutit à la page statique `/update-password/`. MFA n'est pas inclus. Une session est persistée par le SDK dans le navigateur du fournisseur pour la continuité SSO ; consulter les limites de sécurité avant mise en production.

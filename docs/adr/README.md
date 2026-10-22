@@ -9,6 +9,7 @@
 | [0005](0005-redirections-loopback.md) | Redirections HTTP de loopback fournies par Supabase, y compris en production | Accepte |
 | [0006](0006-inscription-email.md) | Inscription email via le SDK Supabase | Accepte |
 | [0007](0007-page-bienvenue-statique.md) | Page de confirmation email sur une entree HTML statique | Accepte |
+| [0008](0008-recuperation-mot-de-passe.md) | Récupération du mot de passe via Supabase et page statique | Accepte |
 
 Date des decisions initiales : 2026-10-20. Choix de stack, mode de connexion et domaine personnalise confirmes par le porteur du projet. Nom « Stiff Identity » et interface francaise retenus par defaut, modifiables sans changement d'architecture.
 
