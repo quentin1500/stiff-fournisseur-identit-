@@ -45,6 +45,8 @@ Depuis la mire de connexion, l'utilisateur peut demander la réinitialisation de
 
 L'interface adopte une identite noir et bleu clair, avec un fond sombre, un panneau clair, des contours volontairement irreguliers et des microcopies legerement enjouees. Le logo et le favicon utilisent une tete de requin stylisee originale. Le ton reste clair et les informations de consentement restent prioritaires. Cette direction ne doit pas reduire le contraste, la lisibilite, la navigation clavier ni l'adaptation mobile ; elle n'ajoute aucun contenu distant et ne change pas le parcours OAuth.
 
+Les emails de confirmation d'inscription et de récupération reprennent le nom « Stiff Identity », le logo du site et ses couleurs noir/bleu clair. Ils restent courts : une explication, un lien d'action et, pour la récupération, une consigne si la demande n'est pas reconnue. Le logo est chargé depuis l'origine du site configurée dans Supabase ; aucun service tiers n'est utilisé. Son affichage dépend du chargement des images distantes par le client mail.
+
 L'URL racine ne cree pas de demande : elle affiche le meme traitement d'absence de demande (ou de configuration). Ce n'est pas une page marketing.
 
 ## Hors perimetre
