@@ -2,6 +2,8 @@
 
 Frontend de connexion et de consentement pour un fournisseur d'identite Supabase OAuth Server. Vue 3, TypeScript et Vite ; publication statique sur GitHub Pages avec domaine personnalise.
 
+![Page de connexion](./docs/screenshots/login.png)
+
 ## Demarrage
 
 Prerequis : Node >= 22.22.2 et npm.
